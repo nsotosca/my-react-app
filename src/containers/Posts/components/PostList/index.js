@@ -18,7 +18,7 @@ class PostList extends React.Component {
   }
 
   render() {
-    const { posts } = this.props;
+    const { deletePost, posts } = this.props;
 
     return (
       <section>
@@ -34,7 +34,13 @@ class PostList extends React.Component {
           </thead>
           <tbody>
             {
-              posts.map(post => <PostListItem key={post.id} {...post} />)
+              posts.map(post => (
+                <PostListItem
+                  key={post.id}
+                  deletePost={deletePost}
+                  {...post}
+                />
+              ))
             }
           </tbody>
         </table>
@@ -48,12 +54,14 @@ const mapStateToProps = createStructuredSelector({
 });
 
 const mapDispatchToProps = dispatch => ({
+  deletePost: id => dispatch(actionCreators.deletePostRequest(id)),
   fetchPosts: () => dispatch(actionCreators.fetchPostsRequest()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(PostList);
 
 PostList.propTypes = {
+  deletePost: PropTypes.func.isRequired,
   fetchPosts: PropTypes.func.isRequired,
   posts: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
