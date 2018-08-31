@@ -3,17 +3,21 @@ import {
   call,
   fork,
   put,
+  select,
   takeLatest,
 } from 'redux-saga/effects';
 
 import actionCreators from './actionCreators';
 import actionTypes from './actionTypes';
+import postsSelectors from './selectors';
 import request from '../../utils/request';
 import settings from '../../utils/settings';
 
-export function* createPost(action) {
+export function* createPost() {
+  const post = yield select(postsSelectors.makeSelectPost);
+
   const options = {
-    body: JSON.stringify(action.post),
+    body: JSON.stringify(post),
     headers: settings.headers,
     method: 'POST',
   };
@@ -40,6 +44,20 @@ export function* deletePost(action) {
   }
 }
 
+export function* fetchPost(action) {
+  const options = {
+    headers: settings.headers,
+    method: 'GET',
+  };
+
+  try {
+    const post = yield call(request, `${settings.url}${settings.endpoints.posts}/${action.id}`, options);
+    yield put(actionCreators.fetchPostSuccess(post));
+  } catch (error) {
+    yield put(actionCreators.fetchPostFailure(error));
+  }
+}
+
 export function* fetchPosts() {
   const options = {
     headers: settings.headers,
@@ -54,12 +72,31 @@ export function* fetchPosts() {
   }
 }
 
+export function* updatePost() {
+  const post = yield select(postsSelectors.makeSelectPost);
+
+  const options = {
+    body: JSON.stringify(post),
+    headers: settings.headers,
+    method: 'PUT',
+  };
+
+  try {
+    const updatedPost = yield call(request, `${settings.url}${settings.endpoints.posts}/${post.id}`, options);
+    yield put(actionCreators.updatePostSuccess(updatedPost));
+  } catch (error) {
+    yield put(actionCreators.updatePostFailure(error));
+  }
+}
+
 export default function* postsSaga() {
   yield all(
     [
       fork(takeLatest, actionTypes.CREATE_POST_REQUEST, createPost),
       fork(takeLatest, actionTypes.DELETE_POST_REQUEST, deletePost),
+      fork(takeLatest, actionTypes.FETCH_POST_REQUEST, fetchPost),
       fork(takeLatest, actionTypes.FETCH_POSTS_REQUEST, fetchPosts),
+      fork(takeLatest, actionTypes.UPDATE_POST_REQUEST, updatePost),
     ],
   );
 }

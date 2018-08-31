@@ -1,12 +1,12 @@
 import { combineReducers } from 'redux';
 
-// import app from '../containers/App/reducer';
+import app from '../containers/App/reducer';
 // import comments from '../containers/BackupSettings/reducer';
 import posts from '../containers/Posts/reducer';
 
-const reducer = combineReducers({
-  // app,
+const rootReducer = combineReducers({
+  app,
   posts,
 });
 
-export default reducer;
+export default rootReducer;

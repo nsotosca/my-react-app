@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
+import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import React from 'react';
 
@@ -23,6 +24,9 @@ class PostList extends React.Component {
     return (
       <section>
         <H1 text="Posts" />
+        <div className="text-right" style={{ paddingBottom: '10px' }}>
+          <Link className="btn btn-primary" to="/posts/create">Add (+)</Link>
+        </div>
         <table className="table table-hover table-bordered">
           <thead>
             <tr>

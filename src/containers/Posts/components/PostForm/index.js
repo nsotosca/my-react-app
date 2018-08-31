@@ -1,89 +1,101 @@
 import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect';
+import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import React from 'react';
 
 import actionCreators from '../../actionCreators';
+import postsSelectors from '../../selectors';
 import { TextInput } from '../../../../components';
 
 class PostForm extends React.Component {
-  constructor(props) {
-    super(props);
-    // Initialise state
-    this.state = {
-      isFormSubmitted: false,
-      post: {
-        author: '',
-        title: '',
-      },
-    };
-    // Handlers
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleTextChange = this.handleTextChange.bind(this);
-  }
+  componentDidMount() {
+    const { fetchPost, match, resetPost } = this.props;
+    const id = match.params.postId;
 
-  handleSubmit(e) {
-    e.preventDefault();
-    // Enable validations
-    this.setState({ isFormSubmitted: true });
-    const { post } = this.state;
-    // Show error messages
-    if (!post.author || !post.title) {
-      return;
+    if (id) {
+      fetchPost(id);
+    } else {
+      resetPost();
     }
-
-    const { createPost } = this.props;
-    createPost(post);
-  }
-
-  handleTextChange(e) {
-    const { post } = this.state;
-
-    this.setState({
-      post: {
-        ...post,
-        [e.target.name]: e.target.value,
-      },
-    });
   }
 
   render() {
-    const { isFormSubmitted, post } = this.state;
+    const {
+      history,
+      post,
+      savePost,
+      setPost,
+    } = this.props;
 
     return (
-      <form onSubmit={this.handleSubmit}>
+      <form onSubmit={e => savePost(e, post, history)}>
         <fieldset>
-          <legend>Create Post</legend>
+          <legend>
+            {post.id ? 'Edit' : 'Create'}
+            &nbsp;
+            Post
+          </legend>
           <TextInput
             id="author"
-            isFormSubmitted={isFormSubmitted}
+            isFormSubmitted={false}
             label="Author"
-            onChange={this.handleTextChange}
+            onChange={e => setPost(e, post)}
             value={post.author}
           />
           <TextInput
             id="title"
-            isFormSubmitted={isFormSubmitted}
+            isFormSubmitted={false}
             label="Title"
-            onChange={this.handleTextChange}
+            onChange={e => setPost(e, post)}
             value={post.title}
           />
-          <button className="btn btn-primary" type="submit">Submit</button>
+          <p className="text-center">
+            <Link className="btn btn-secondary" to="/posts">Cancel</Link>
+            &nbsp;
+            <button className="btn btn-primary" type="submit">Submit</button>
+          </p>
         </fieldset>
       </form>
     );
   }
 }
 
-const mapStateToProps = state => ({
-
+const mapStateToProps = createStructuredSelector({
+  post: postsSelectors.makeSelectPost,
 });
 
 const mapDispatchToProps = dispatch => ({
-  createPost: post => dispatch(actionCreators.createPostRequest(post)),
+  fetchPost: id => dispatch(actionCreators.fetchPostRequest(id)),
+  resetPost: () => dispatch(actionCreators.resetPost()),
+  savePost: (e, post, history) => {
+    e.preventDefault();
+
+    if (post.id) {
+      dispatch(actionCreators.updatePostRequest());
+    } else {
+      dispatch(actionCreators.createPostRequest());
+    }
+
+    history.push('/posts');
+  },
+  setPost: (e, post) => dispatch(actionCreators.setPost({
+    ...post,
+    [e.target.name]: e.target.value,
+  })),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(PostForm);
 
 PostForm.propTypes = {
-  createPost: PropTypes.func.isRequired,
+  fetchPost: PropTypes.func.isRequired,
+  match: PropTypes.object.isRequired,
+  post: PropTypes.shape({
+    author: PropTypes.string,
+    id: PropTypes.number,
+    title: PropTypes.string,
+  }).isRequired,
+  resetPost: PropTypes.func.isRequired,
+  savePost: PropTypes.func.isRequired,
+  setPost: PropTypes.func.isRequired,
 };

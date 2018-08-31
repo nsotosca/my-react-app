@@ -8,7 +8,7 @@ export default function Posts() {
     <section>
       <Route exact path="/posts/" component={PostList} />
       <Route path="/posts/create" component={PostForm} />
-      <Route path="/posts/:id/edit" component={PostForm} />
+      <Route path="/posts/:postId/edit" component={PostForm} />
     </section>
   );
 }

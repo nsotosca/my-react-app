@@ -3,7 +3,7 @@ import React from 'react';
 
 export default function H1({ text }) {
   return (
-    <h1 style={{ padding: '10px 0px' }}>{text}</h1>
+    <h1 style={{ paddingTop: '10px' }}>{text}</h1>
   );
 }
 
